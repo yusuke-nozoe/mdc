@@ -7,7 +7,7 @@
 
 use std::env;
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 #[tauri::command]
 fn get_markdown_content() -> String {
@@ -15,17 +15,15 @@ fn get_markdown_content() -> String {
     if args.len() > 1 {
         let path = &args[1];
         let resolved_path = if Path::new(path).is_absolute() {
-            path.to_string()
+            PathBuf::from(path)
         } else {
-            // 相対パスの場合、Cargo.tomlがある場所をプロジェクトルートとして解決
-            let manifest_dir = env!("CARGO_MANIFEST_DIR");
-            let project_root = Path::new(manifest_dir).parent().unwrap();
-            project_root.join(path).to_string_lossy().to_string()
+            // 相対パスの場合、実行時のカレントディレクトリから解決
+            env::current_dir().unwrap_or_else(|_| PathBuf::from(".")).join(path)
         };
         
         match fs::read_to_string(&resolved_path) {
             Ok(content) => content,
-            Err(_) => "File not found".to_string()
+            Err(_) => format!("File not found: {}", resolved_path.display())
         }
     } else {
         "No file specified".to_string()
