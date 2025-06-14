@@ -25,7 +25,7 @@ fn get_markdown_content() -> String {
         
         match fs::read_to_string(&resolved_path) {
             Ok(content) => content,
-            Err(_) => format!("File not found: {}", resolved_path)
+            Err(_) => "File not found".to_string()
         }
     } else {
         "No file specified".to_string()
