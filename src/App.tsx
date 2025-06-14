@@ -72,7 +72,7 @@ export default function App() {
         <div className="lg:flex lg:gap-8">
           {/* TOC - Desktop only */}
           <aside className="hidden lg:block w-64 flex-shrink-0">
-            <div className="sticky top-12">
+            <div className="sticky top-12 max-h-[calc(100vh-6rem)] overflow-y-auto">
               <TocComponent toc={toc} />
             </div>
           </aside>
