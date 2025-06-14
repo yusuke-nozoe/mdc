@@ -1,2 +1,8 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
+
+@layer base {
+  body {
+    @apply bg-gradient-to-br from-slate-50 to-gray-100 dark:from-gray-900 dark:to-slate-800;
+  }
+}

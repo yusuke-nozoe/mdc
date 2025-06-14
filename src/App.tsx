@@ -13,7 +13,7 @@ export default function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black">
+    <div className="min-h-screen">
       <div className="container mx-auto px-6 py-12 max-w-4xl">
         <article className="prose prose-lg prose-slate dark:prose-invert">
           <ReactMarkdown>{markdownText}</ReactMarkdown>
