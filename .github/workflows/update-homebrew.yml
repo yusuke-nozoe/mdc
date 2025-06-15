@@ -15,66 +15,39 @@ jobs:
 
       - name: Update Formula
         run: |
-          # リリース情報を取得
           VERSION="${{ github.event.release.tag_name }}"
-          VERSION="${VERSION#v}"  # v を削除
+          VERSION="${VERSION#v}"
           
-          # ダウンロードURLを構築
-          RELEASE_URL="https://github.com/zoetin45/mdc/releases/download/${{ github.event.release.tag_name }}"
+          # ファイル名とURLを構築
+          DMG_NAME="mdc_${VERSION}_universal.dmg"
+          DMG_URL="https://github.com/zoetin45/mdc/releases/download/${{ github.event.release.tag_name }}/${DMG_NAME}"
           
-          # アセット情報を取得してSHA256を計算
-          echo "Fetching release assets..."
+          # ダウンロードしてSHA256を計算
+          curl -sL "${DMG_URL}" -o "${DMG_NAME}"
+          SHA256=$(shasum -a 256 "${DMG_NAME}" | cut -d' ' -f1)
           
-          # 各アーキテクチャのファイルをダウンロードしてSHA256を計算
-          INTEL_DMG="mdc_${VERSION}_x64.dmg"
-          ARM_DMG="mdc_${VERSION}_aarch64.dmg"
-          
-          if curl -sL "${RELEASE_URL}/${INTEL_DMG}" -o "${INTEL_DMG}"; then
-            INTEL_SHA=$(shasum -a 256 "${INTEL_DMG}" | cut -d' ' -f1)
-            echo "Intel SHA: ${INTEL_SHA}"
-          fi
-          
-          if curl -sL "${RELEASE_URL}/${ARM_DMG}" -o "${ARM_DMG}"; then
-            ARM_SHA=$(shasum -a 256 "${ARM_DMG}" | cut -d' ' -f1)
-            echo "ARM SHA: ${ARM_SHA}"
-          fi
-          
-          # Formulaファイルを更新
-          FORMULA_FILE="Formula/mdc.rb"
-          
-          # バージョンを更新
-          sed -i "s/version \"[^\"]*\"/version \"${VERSION}\"/" "${FORMULA_FILE}"
-          
-          # Intel版のURLとSHA256を更新
-          sed -i "/Hardware::CPU.intel?/,/sha256/ {
-            s|url \"[^\"]*\"|url \"${RELEASE_URL}/${INTEL_DMG}\"|
-            s|sha256 \"[^\"]*\"|sha256 \"${INTEL_SHA}\"|
-          }" "${FORMULA_FILE}"
-          
-          # ARM版のURLとSHA256を更新
-          sed -i "/Hardware::CPU.arm?/,/sha256/ {
-            s|url \"[^\"]*\"|url \"${RELEASE_URL}/${ARM_DMG}\"|
-            s|sha256 \"[^\"]*\"|sha256 \"${ARM_SHA}\"|
-          }" "${FORMULA_FILE}"
-          
-          # 変更内容を確認
-          echo "Updated formula:"
-          cat "${FORMULA_FILE}"
-          
-          # クリーンアップ
-          rm -f *.dmg
+          # Formulaを書き換え
+          cat > Formula/mdc.rb << EOF
+class Mdc < Formula
+  desc "MDC - Markdown Converter"
+  homepage "https://github.com/zoetin45/mdc"
+  version "${VERSION}"
+  
+  url "${DMG_URL}"
+  sha256 "${SHA256}"
+
+  def install
+    app = "mdc.app"
+    prefix.install Dir["*"]
+    bin.install_symlink prefix/app/"Contents/MacOS/mdc"
+  end
+end
+EOF
 
       - name: Commit and push
         run: |
           git config user.name github-actions[bot]
           git config user.email github-actions[bot]@users.noreply.github.com
-          
-          # 変更があるか確認
-          if git diff --exit-code; then
-            echo "No changes to commit"
-            exit 0
-          else
-            git add .
-            git commit -m "Update to version ${{ github.event.release.tag_name }}"
-            git push
-          fi
+          git add .
+          git commit -m "Update to version ${{ github.event.release.tag_name }}"
+          git push
