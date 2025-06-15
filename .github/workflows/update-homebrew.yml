@@ -1,4 +1,5 @@
 name: Update Homebrew Formula
+
 on:
   release:
     types: [published]
@@ -6,6 +7,7 @@ on:
 jobs:
   update-homebrew:
     runs-on: ubuntu-latest
+    
     steps:
       - name: Checkout homebrew-tap
         uses: actions/checkout@v4
@@ -15,39 +17,57 @@ jobs:
 
       - name: Update Formula
         run: |
+          # バージョンを取得（vを除去）
           VERSION="${{ github.event.release.tag_name }}"
           VERSION="${VERSION#v}"
           
-          # ファイル名とURLを構築
+          # DMGファイルの情報を設定
           DMG_NAME="mdc_${VERSION}_universal.dmg"
           DMG_URL="https://github.com/zoetin45/mdc/releases/download/${{ github.event.release.tag_name }}/${DMG_NAME}"
           
-          # ダウンロードしてSHA256を計算
+          # DMGをダウンロード
+          echo "Downloading ${DMG_NAME}..."
           curl -sL "${DMG_URL}" -o "${DMG_NAME}"
-          SHA256=$(shasum -a 256 "${DMG_NAME}" | cut -d' ' -f1)
           
-          # Formulaを書き換え
-          cat > Formula/mdc.rb << EOF
-class Mdc < Formula
-  desc "MDC - Markdown Converter"
-  homepage "https://github.com/zoetin45/mdc"
-  version "${VERSION}"
-  
-  url "${DMG_URL}"
-  sha256 "${SHA256}"
+          # SHA256を計算
+          SHA256=$(shasum -a 256 "${DMG_NAME}" | cut -d' ' -f1)
+          echo "SHA256: ${SHA256}"
+          
+          # Formulaファイルを生成
+          cat > Formula/mdc.rb << 'EOF'
+          class Mdc < Formula
+            desc "MDC - Markdown Converter"
+            homepage "https://github.com/zoetin45/mdc"
+            version "VERSION_PLACEHOLDER"
+            
+            url "URL_PLACEHOLDER"
+            sha256 "SHA256_PLACEHOLDER"
 
-  def install
-    app = "mdc.app"
-    prefix.install Dir["*"]
-    bin.install_symlink prefix/app/"Contents/MacOS/mdc"
-  end
-end
-EOF
+            def install
+              app = "mdc.app"
+              prefix.install Dir["*"]
+              bin.install_symlink prefix/app/"Contents/MacOS/mdc"
+            end
+          end
+          EOF
+          
+          # プレースホルダーを実際の値に置換
+          sed -i "s|VERSION_PLACEHOLDER|${VERSION}|g" Formula/mdc.rb
+          sed -i "s|URL_PLACEHOLDER|${DMG_URL}|g" Formula/mdc.rb
+          sed -i "s|SHA256_PLACEHOLDER|${SHA256}|g" Formula/mdc.rb
+          
+          # 結果を確認
+          echo "Generated Formula:"
+          cat Formula/mdc.rb
+          
+          # ダウンロードしたファイルを削除
+          rm -f "${DMG_NAME}"
 
       - name: Commit and push
         run: |
-          git config user.name github-actions[bot]
-          git config user.email github-actions[bot]@users.noreply.github.com
-          git add .
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          git add Formula/mdc.rb
           git commit -m "Update to version ${{ github.event.release.tag_name }}"
           git push
