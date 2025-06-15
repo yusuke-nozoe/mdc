@@ -27,7 +27,7 @@ jobs:
       - name: Checkout homebrew-tap
         uses: actions/checkout@v4
         with:
-          repository: zoetin45/homebrew-tap
+          repository: zoetin45/homebrew-mdc
           token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
           
       - name: Update Formula
@@ -49,30 +49,26 @@ jobs:
           # Formulaディレクトリを作成
           mkdir -p Formula
           
-          # Formulaを生成（echoで1行ずつ）
+          # Formulaを生成
           {
             echo 'class Mdc < Formula'
-            echo '  desc "mdc - Just another markdown viewer"'
+            echo '  desc "MDC - Markdown Converter"'
             echo '  homepage "https://github.com/zoetin45/mdc"'
             echo "  version \"${VERSION}\""
             echo "  url \"${DMG_URL}\""
             echo "  sha256 \"${SHA256}\""
             echo ''
             echo '  def install'
-            echo '    # DMGをマウント'
-            echo '    mountpoint = "/Volumes/mdc"'
-            echo '    system "hdiutil", "attach", "-quiet", "-mountpoint", mountpoint, cached_download'
+            echo '    system "hdiutil", "attach", cached_download'
+            echo '    volumes = Dir["/Volumes/mdc*"]'
+            echo '    mountpoint = volumes.first'
             echo ''
             echo '    begin'
-            echo '      # アプリをインストール'
-            echo '      app = Pathname.new("#{mountpoint}/mdc.app")'
-            echo '      prefix.install app'
-            echo ''
-            echo '      # バイナリへのシンボリックリンクを作成'
+            echo '      app_path = "#{mountpoint}/mdc.app"'
+            echo '      cp_r app_path, prefix'
             echo '      bin.install_symlink prefix/"mdc.app/Contents/MacOS/mdc"'
             echo '    ensure'
-            echo '      # DMGをアンマウント'
-            echo '      system "hdiutil", "detach", "-quiet", mountpoint'
+            echo '      system "hdiutil", "detach", mountpoint'
             echo '    end'
             echo '  end'
             echo ''
@@ -81,7 +77,6 @@ jobs:
             echo '  end'
             echo 'end'
           } > Formula/mdc.rb
-          
           
           # 結果を確認
           echo "Generated Formula:"
