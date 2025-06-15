@@ -19,24 +19,62 @@ jobs:
           VERSION="${{ github.event.release.tag_name }}"
           VERSION="${VERSION#v}"  # v を削除
           
-          # ダウンロードURLとSHA256を取得
-          INTEL_URL="https://github.com/${{ github.repository }}/releases/download/${{ github.event.release.tag_name }}/mdc_${VERSION}_x64.dmg"
-          ARM_URL="https://github.com/${{ github.repository }}/releases/download/${{ github.event.release.tag_name }}/mdc_${VERSION}_aarch64.dmg"
+          # ダウンロードURLを構築
+          RELEASE_URL="https://github.com/zoetin45/mdc/releases/download/${{ github.event.release.tag_name }}"
           
-          # SHA256を計算（実際のファイルから）
-          INTEL_SHA=$(curl -sL $INTEL_URL | shasum -a 256 | cut -d' ' -f1)
-          ARM_SHA=$(curl -sL $ARM_URL | shasum -a 256 | cut -d' ' -f1)
+          # アセット情報を取得してSHA256を計算
+          echo "Fetching release assets..."
           
-          # Formulaを更新
-          sed -i "s/version \".*\"/version \"$VERSION\"/" Formula/mdc.rb
-          sed -i "s|url \".*_x64\.dmg\"|url \"$INTEL_URL\"|" Formula/mdc.rb
-          sed -i "s|url \".*_aarch64\.dmg\"|url \"$ARM_URL\"|" Formula/mdc.rb
-          # SHA256も同様に更新
+          # 各アーキテクチャのファイルをダウンロードしてSHA256を計算
+          INTEL_DMG="mdc_${VERSION}_x64.dmg"
+          ARM_DMG="mdc_${VERSION}_aarch64.dmg"
+          
+          if curl -sL "${RELEASE_URL}/${INTEL_DMG}" -o "${INTEL_DMG}"; then
+            INTEL_SHA=$(shasum -a 256 "${INTEL_DMG}" | cut -d' ' -f1)
+            echo "Intel SHA: ${INTEL_SHA}"
+          fi
+          
+          if curl -sL "${RELEASE_URL}/${ARM_DMG}" -o "${ARM_DMG}"; then
+            ARM_SHA=$(shasum -a 256 "${ARM_DMG}" | cut -d' ' -f1)
+            echo "ARM SHA: ${ARM_SHA}"
+          fi
+          
+          # Formulaファイルを更新
+          FORMULA_FILE="Formula/mdc.rb"
+          
+          # バージョンを更新
+          sed -i "s/version \"[^\"]*\"/version \"${VERSION}\"/" "${FORMULA_FILE}"
+          
+          # Intel版のURLとSHA256を更新
+          sed -i "/Hardware::CPU.intel?/,/sha256/ {
+            s|url \"[^\"]*\"|url \"${RELEASE_URL}/${INTEL_DMG}\"|
+            s|sha256 \"[^\"]*\"|sha256 \"${INTEL_SHA}\"|
+          }" "${FORMULA_FILE}"
+          
+          # ARM版のURLとSHA256を更新
+          sed -i "/Hardware::CPU.arm?/,/sha256/ {
+            s|url \"[^\"]*\"|url \"${RELEASE_URL}/${ARM_DMG}\"|
+            s|sha256 \"[^\"]*\"|sha256 \"${ARM_SHA}\"|
+          }" "${FORMULA_FILE}"
+          
+          # 変更内容を確認
+          echo "Updated formula:"
+          cat "${FORMULA_FILE}"
+          
+          # クリーンアップ
+          rm -f *.dmg
 
       - name: Commit and push
         run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git add .
-          git commit -m "Update to version ${{ github.event.release.tag_name }}"
-          git push
+          git config user.name github-actions[bot]
+          git config user.email github-actions[bot]@users.noreply.github.com
+          
+          # 変更があるか確認
+          if git diff --exit-code; then
+            echo "No changes to commit"
+            exit 0
+          else
+            git add .
+            git commit -m "Update to version ${{ github.event.release.tag_name }}"
+            git push
+          fi
