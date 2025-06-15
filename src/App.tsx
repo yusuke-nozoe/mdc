@@ -38,7 +38,7 @@ const TocComponent: React.FC<{ toc: TocItem[] }> = ({ toc }) => {
 
   return (
     <nav className="toc">
-      <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">目次</h3>
+      <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">Table of Contents</h3>
       <ul className="space-y-2">
         {toc.map((item, index) => (
           <li key={index} style={{ marginLeft: `${(item.level - 1) * 16}px` }}>
@@ -91,10 +91,10 @@ export default function App() {
               >
                 <div className="text-6xl mb-4">📄</div>
                 <h2 className="text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                  マークダウンファイルを選択
+                  Select a Markdown File
                 </h2>
                 <p className="text-gray-500 dark:text-gray-400">
-                  クリックしてファイルを選択してください
+                  Click here to choose a file
                 </p>
               </div>
             </div>
@@ -106,7 +106,7 @@ export default function App() {
             <button
               onClick={handleFileSelect}
               className="cursor-pointer fixed top-6 right-6 z-50 w-10 h-10 bg-gray-800 bg-opacity-20 hover:bg-blue-600 hover:bg-opacity-80 text-gray-600 hover:text-white dark:text-gray-400 dark:hover:text-white rounded-full flex items-center justify-center transition-all duration-200 backdrop-blur-sm hover:backdrop-blur-md"
-              title="別のファイルを選択"
+              title="Select another file"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
