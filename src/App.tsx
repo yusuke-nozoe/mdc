@@ -105,12 +105,15 @@ export default function App() {
             {/* 右上の×ボタン */}
             <button
               onClick={handleFileSelect}
-              className="fixed top-6 right-6 z-50 w-8 h-8 bg-gray-800 bg-opacity-20 hover:bg-opacity-40 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 rounded-full flex items-center justify-center transition-all duration-200 backdrop-blur-sm"
+              className="cursor-pointer fixed top-6 right-6 z-50 w-10 h-10 bg-gray-800 bg-opacity-20 hover:bg-blue-600 hover:bg-opacity-80 text-gray-600 hover:text-white dark:text-gray-400 dark:hover:text-white rounded-full flex items-center justify-center transition-all duration-200 backdrop-blur-sm hover:backdrop-blur-md"
               title="別のファイルを選択"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14,2 14,8 20,8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10,9 9,9 8,9"></polyline>
               </svg>
             </button>
 
