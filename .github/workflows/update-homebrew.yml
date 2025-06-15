@@ -52,20 +52,36 @@ jobs:
           # Formulaを生成（echoで1行ずつ）
           {
             echo 'class Mdc < Formula'
-            echo '  desc "MDC - Markdown Converter"'
+            echo '  desc "mdc - Just another markdown viewer"'
             echo '  homepage "https://github.com/zoetin45/mdc"'
             echo "  version \"${VERSION}\""
-            echo ''
             echo "  url \"${DMG_URL}\""
             echo "  sha256 \"${SHA256}\""
             echo ''
             echo '  def install'
-            echo '    app = "mdc.app"'
-            echo '    prefix.install Dir["*"]'
-            echo '    bin.install_symlink prefix/app/"Contents/MacOS/mdc"'
+            echo '    # DMGをマウント'
+            echo '    mountpoint = "/Volumes/mdc"'
+            echo '    system "hdiutil", "attach", "-quiet", "-mountpoint", mountpoint, cached_download'
+            echo ''
+            echo '    begin'
+            echo '      # アプリをインストール'
+            echo '      app = Pathname.new("#{mountpoint}/mdc.app")'
+            echo '      prefix.install app'
+            echo ''
+            echo '      # バイナリへのシンボリックリンクを作成'
+            echo '      bin.install_symlink prefix/"mdc.app/Contents/MacOS/mdc"'
+            echo '    ensure'
+            echo '      # DMGをアンマウント'
+            echo '      system "hdiutil", "detach", "-quiet", mountpoint'
+            echo '    end'
+            echo '  end'
+            echo ''
+            echo '  test do'
+            echo '    system "#{bin}/mdc", "--version"'
             echo '  end'
             echo 'end'
           } > Formula/mdc.rb
+          
           
           # 結果を確認
           echo "Generated Formula:"
