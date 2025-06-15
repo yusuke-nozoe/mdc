@@ -1,10 +1,10 @@
 {
   "name": "mdc",
   "private": true,
-  "version": "0.1.5",
+  "version": "0.1.6",
   "type": "module",
   "scripts": {
-    "version": "node scripts/sync-version.js && git add src-tauri/tauri.conf.json",
+    "version": "node sync-version.js && git add src-tauri/tauri.conf.json",
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
