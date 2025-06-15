@@ -1,8 +1,11 @@
 name: Update Homebrew Formula
 
 on:
-  release:
-    types: [published, released]
+  workflow_run:
+    workflows: ["Release"]
+    types:
+      - completed
+    branches: [main]
   workflow_dispatch:
     inputs:
       tag_name:
