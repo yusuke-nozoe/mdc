@@ -4,6 +4,7 @@
   "version": "0.1.4",
   "type": "module",
   "scripts": {
+    "version": "node -e \"const pkg=require('./package.json');const conf=require('./src-tauri/tauri.conf.json');conf.package.version=pkg.version;require('fs').writeFileSync('./src-tauri/tauri.conf.json',JSON.stringify(conf,null,2)+'\\n')\" && git add src-tauri/tauri.conf.json",
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
