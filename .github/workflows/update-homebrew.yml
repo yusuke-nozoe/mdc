@@ -27,7 +27,7 @@ jobs:
       - name: Checkout homebrew-tap
         uses: actions/checkout@v4
         with:
-          repository: zoetin45/homebrew-mdc
+          repository: zoetin45/homebrew-tap
           token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
           
       - name: Update Formula
